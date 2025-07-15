@@ -22,9 +22,13 @@ char* strdup_cpp(const TagLib::String& s) {
 
 bool hasEmbeddedImage(TagLib::File* f) {
   if (auto* mp3 = dynamic_cast<TagLib::MPEG::File*>(f)) {
-    if (mp3->ID3v2Tag()) {
-      auto pictures = mp3->ID3v2Tag()->frameListMap()["APIC"];
-      return !pictures.isEmpty();
+    auto* id3v2tag = mp3->ID3v2Tag();
+    if (id3v2tag) {
+      auto frameListMap = id3v2tag->frameListMap();
+      for (const auto& pair : frameListMap) {
+        std::string frameId(pair.first.data(), pair.first.size());
+      }
+      return (!frameListMap["APIC"].isEmpty() || !frameListMap["PIC"].isEmpty());
     }
   }
   else if (auto* flac = dynamic_cast<TagLib::FLAC::File*>(f)) {
@@ -32,6 +36,12 @@ bool hasEmbeddedImage(TagLib::File* f) {
   }
   else if (auto* mp4 = dynamic_cast<TagLib::MP4::File*>(f)) {
     return mp4->tag()->contains("covr");
+  }
+  else if (auto* ogg = dynamic_cast<TagLib::Ogg::Vorbis::File*>(f)) {
+    auto* tag = ogg->tag();
+    if (tag && !tag->pictureList().isEmpty()) {
+      return true;
+    }
   }
   return false;
 }

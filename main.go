@@ -401,17 +401,16 @@ func ReadMetadata(filename string) (*Metadata, error) {
 		TagType:			C.GoString(cMeta.tag_type),
 		ReleaseDate:	C.GoString(cMeta.date),
 		Year:					int(cMeta.year),
-		DiscNumber:		int(cMeta.year),
+		DiscNumber:		int(cMeta.disc),
 		DiscTotal:		int(cMeta.disc_total),
-		TrackNumber:	int(cMeta.year),
+		TrackNumber:	int(cMeta.track),
 		TrackTotal:		int(cMeta.track_total),
-		Bitrate:			int(cMeta.year),
-		Frequency:		int(cMeta.year),
+		Bitrate:			int(cMeta.bitrate),
+		Frequency:		int(cMeta.frequency),
 		Duration:			int(cMeta.duration),
 		Channels:			int(cMeta.channels),
 		HasImage:			bool(cMeta.has_image>0),
 	}
-	fmt.Printf("Test: %v\n", cMeta.has_image)
 	return meta, nil
 }
 
