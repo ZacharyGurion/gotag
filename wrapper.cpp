@@ -13,6 +13,18 @@
 #include <cstdlib>
 #include <sstream>
 
+#ifndef _GNU_SOURCE
+char* strdup(const char* s) {
+    if (!s) return nullptr;
+    size_t len = strlen(s) + 1;
+    char* copy = (char*)malloc(len);
+    if (copy) {
+        strcpy(copy, s);
+    }
+    return copy;
+}
+#endif
+
 char* strdup_cpp(const TagLib::String& s) {
   std::string utf8 = s.to8Bit(true);
   char* cstr = (char*)malloc(utf8.size() + 1);

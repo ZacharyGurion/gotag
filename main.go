@@ -2,7 +2,7 @@ package main
 
 /*
 #cgo CXXFLAGS: -std=c++11
-#cgo LDFLAGS: wrapper.o -lstdc++ -ltag
+#cgo LDFLAGS: -L. wrapper.o -lstdc++ -ltag
 #include "wrapper.h"
 #include <stdlib.h>
 */
@@ -39,20 +39,20 @@ var supportedExtensions = map[string]bool{
 type state int
 
 type Metadata struct {
-	Title					string
+	Title				string
 	Artist				string
-	AlbumArtist		string
-	Album					string
-	Genre					string
+	AlbumArtist			string
+	Album				string
+	Genre				string
 	Comment				string
-	Codec					string
+	Codec				string
 	TagType				string
-	ReleaseDate		string
-	Year					int
-	DiscNumber		int
+	ReleaseDate			string
+	Year				int
+	DiscNumber			int
 	DiscTotal			int
-	TrackNumber		int
-	TrackTotal		int
+	TrackNumber			int
+	TrackTotal			int
 	Bitrate				int // in kb/s
 	Frequency			int // in Hz
 	Duration			int // in seconds
@@ -261,43 +261,60 @@ func (m *model) extractMetadata(filePath string) {
 	m.metadata["Format"] = strings.TrimPrefix(ext, ".")
 
 	// Add editable metadata based on file type
-	switch ext {
-	case ".mp3":
-		m.metadata["Title"] = "Sample Title"
-		m.metadata["Artist"] = "Sample Artist"
-		m.metadata["Album"] = "Sample Album"
-		m.metadata["Year"] = "2023"
-		m.metadata["Genre"] = "Pop"
-		m.metadata["Track"] = "1"
-		m.metadata["Bitrate"] = "320 kbps"
-		m.metadata["Duration"] = "3:45"
-		m.metadata["ID3 Version"] = "2.4"
-	case ".flac":
-		m.metadata["Title"] = "Sample Title"
-		m.metadata["Artist"] = "Sample Artist"
-		m.metadata["Album"] = "Sample Album"
-		m.metadata["Date"] = "2023"
-		m.metadata["Genre"] = "Rock"
-		m.metadata["Track Number"] = "1"
-		m.metadata["Sample Rate"] = "44100 Hz"
-		m.metadata["Bit Depth"] = "16 bit"
-		m.metadata["Duration"] = "3:45"
-	case ".m4a":
-		m.metadata["Title"] = "Sample Title"
-		m.metadata["Artist"] = "Sample Artist"
-		m.metadata["Album"] = "Sample Album"
-		m.metadata["Year"] = "2023"
-		m.metadata["Genre"] = "Electronic"
-		m.metadata["Track"] = "1/12"
-		m.metadata["Bitrate"] = "256 kbps"
-		m.metadata["Duration"] = "4:20"
-		m.metadata["Codec"] = "AAC"
-	default:
-		m.metadata["Title"] = "Unknown"
-		m.metadata["Artist"] = "Unknown"
-		m.metadata["Album"] = "Unknown"
-		m.metadata["Duration"] = "Unknown"
+	meta, err := ReadMetadata(filePath)
+	if err != nil {
+		m.metadata["Error"] = fmt.Sprintf("Failed to read metadata: %v", err)
+		return
 	}
+
+	// Set the actual metadata values
+	if meta.Title != "" {
+		m.metadata["Title"] = meta.Title
+	} else {
+		m.metadata["Title"] = "Unknown"
+	}
+
+	if meta.Artist != "" {
+		m.metadata["Artist"] = meta.Artist
+	} else {
+		m.metadata["Artist"] = "Unknown"
+	}
+
+	if meta.Album != "" {
+		m.metadata["Album"] = meta.Album
+	} else {
+		m.metadata["Album"] = "Unknown"
+	}
+
+	// Add additional metadata if available
+	if meta.Year > 0 {
+		m.metadata["Year"] = fmt.Sprintf("%d", meta.Year)
+	}
+	if meta.Genre != "" {
+		m.metadata["Genre"] = meta.Genre
+	}
+	if meta.TrackNumber > 0 {
+		if meta.TrackTotal > 0 {
+			m.metadata["Track"] = fmt.Sprintf("%d/%d", meta.TrackNumber, meta.TrackTotal)
+		} else {
+			m.metadata["Track"] = fmt.Sprintf("%d", meta.TrackNumber)
+		}
+	}
+	if meta.Bitrate > 0 {
+		m.metadata["Bitrate"] = fmt.Sprintf("%d kbps", meta.Bitrate)
+	}
+	if meta.Duration > 0 {
+		minutes := meta.Duration / 60
+		seconds := meta.Duration % 60
+		m.metadata["Duration"] = fmt.Sprintf("%d:%02d", minutes, seconds)
+	}
+	if meta.Frequency > 0 {
+		m.metadata["Sample Rate"] = fmt.Sprintf("%d Hz", meta.Frequency)
+	}
+	if meta.Codec != "" {
+		m.metadata["Codec"] = meta.Codec
+	}
+
 }
 
 func (m model) buildTableRows() []table.Row {
