@@ -7,10 +7,25 @@ extern "C" {
 
 // Metadata structure to return to Go
 typedef struct {
-    char* title;
-    char* artist;
-    char* album;
-    int year;
+  char* title;
+  char* artist;
+  char* album_artist;
+  char* album;
+  char* genre;
+  char* comment;
+  char* codec;
+  char* tag_type;
+  char* date;
+  int year;
+  int duration;
+  int track;
+  int track_total;
+  int disc;
+  int disc_total;
+  int bitrate;
+  int frequency;
+  int channels;
+  int has_image;
 } Metadata;
 
 // Reads metadata from file. Returns NULL if failed.

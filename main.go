@@ -38,6 +38,28 @@ var supportedExtensions = map[string]bool{
 
 type state int
 
+type Metadata struct {
+	Title					string
+	Artist				string
+	AlbumArtist		string
+	Album					string
+	Genre					string
+	Comment				string
+	Codec					string
+	TagType				string
+	ReleaseDate		string
+	Year					int
+	DiscNumber		int
+	DiscTotal			int
+	TrackNumber		int
+	TrackTotal		int
+	Bitrate				int // in kb/s
+	Frequency			int // in Hz
+	Duration			int // in seconds
+	Channels			int
+	HasImage			bool
+}
+
 const (
 	filePickerState state = iota
 	metadataTableState
@@ -358,6 +380,41 @@ func formatFileSize(size int64) string {
 	}
 }
 
+func ReadMetadata(filename string) (*Metadata, error) {
+	cPath := C.CString(filename)
+	defer C.free(unsafe.Pointer(cPath))
+
+	cMeta := C.read_metadata(cPath)
+	if cMeta == nil {
+		return nil, fmt.Errorf("failed to read metadata")
+	}
+	defer C.free_metadata(cMeta)
+
+	meta := &Metadata{
+		Title:				C.GoString(cMeta.title),
+		Artist:				C.GoString(cMeta.artist),
+		AlbumArtist:	C.GoString(cMeta.album_artist),
+		Album:				C.GoString(cMeta.album),
+		Genre:				C.GoString(cMeta.genre),
+		Comment:			C.GoString(cMeta.comment),
+		Codec:				C.GoString(cMeta.codec),
+		TagType:			C.GoString(cMeta.tag_type),
+		ReleaseDate:	C.GoString(cMeta.date),
+		Year:					int(cMeta.year),
+		DiscNumber:		int(cMeta.year),
+		DiscTotal:		int(cMeta.disc_total),
+		TrackNumber:	int(cMeta.year),
+		TrackTotal:		int(cMeta.track_total),
+		Bitrate:			int(cMeta.year),
+		Frequency:		int(cMeta.year),
+		Duration:			int(cMeta.duration),
+		Channels:			int(cMeta.channels),
+		HasImage:			bool(cMeta.has_image>0),
+	}
+	fmt.Printf("Test: %v\n", cMeta.has_image)
+	return meta, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		p := tea.NewProgram(initialModel(), tea.WithAltScreen())
@@ -368,20 +425,13 @@ func main() {
 		return
 	}
 
-	cPath := C.CString(os.Args[1])
-	defer C.free(unsafe.Pointer(cPath))
-
-	meta := C.read_metadata(cPath)
-	if meta == nil {
-		fmt.Println("Failed to read metadata")
+	meta, err := ReadMetadata(os.Args[1])
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
 		return
 	}
-	defer C.free_metadata(meta)
 
-	fmt.Println("Title: ", C.GoString(meta.title))
-	fmt.Println("Artist:", C.GoString(meta.artist))
-	fmt.Println("Album: ", C.GoString(meta.album))
-	fmt.Println("Year:  ", int(meta.year))
+	fmt.Printf("%+v\n", meta)
 
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
