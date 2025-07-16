@@ -41,25 +41,25 @@ var supportedExtensions = map[string]bool{
 type state int
 
 type Metadata struct {
-	Title				string
-	Artist				string
+	Title						string
+	Artist					string
 	AlbumArtist			string
-	Album				string
-	Genre				string
-	Comment				string
-	Codec				string
-	TagType				string
+	Album						string
+	Genre						string
+	Comment					string
+	Codec						string
+	TagType					string
 	ReleaseDate			string
-	Year				int
+	Year						int
 	DiscNumber			int
-	DiscTotal			int
+	DiscTotal				int
 	TrackNumber			int
 	TrackTotal			int
-	Bitrate				int // in kb/s
-	Frequency			int // in Hz
-	Duration			int // in seconds
-	Channels			int
-	HasImage			bool
+	Bitrate					int // in kb/s
+	Frequency				int // in Hz
+	Duration				int // in seconds
+	Channels				int
+	HasImage				bool
 }
 
 const (
@@ -115,12 +115,8 @@ func EditMetadata(filename, field, value string) error {
 
 	success := C.edit_metadata(cFname, cField, cValue)
 
-	if !success {
-		if value == "test" {
-			fmt.Println("test")
-			return fmt.Errorf("test")
-		}
-		return fmt.Errorf("failed to edit metadata field %s", field)
+	if int(success) == -1 {
+		return fmt.Errorf("Error writing metadata")
 	}
 	return nil
 }
@@ -174,7 +170,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else if m.state == editingState {
 				// Save the edited value
 				newValue := m.textInput.Value()
-				if err := EditMetadata(m.selectedFile, m.editingProperty, newValue); err != nil {
+				if err := EditMetadata(m.selectedFile, strings.ToLower(m.editingProperty), newValue); err != nil {
 					return m, nil
 				}
 				m.metadata[m.editingProperty] = newValue

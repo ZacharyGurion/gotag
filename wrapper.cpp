@@ -199,17 +199,47 @@ Metadata* read_metadata(const char* filename) {
   return meta;
 }
 
-bool edit_metadata(const char* filename, const char* field, const char* value) {
-    TagLib::FileRef f(filename);
-    return true;
-    if (f.isNull() || !f.tag()) {
-        return false;
+int edit_metadata(const char* filename, const char* field, const char* value) {
+  TagLib::FileRef f(filename);
+  if (f.isNull() || !f.tag()) {
+    return -1;
+  }
+  
+  TagLib::Tag* tag = f.tag();
+  TagLib::PropertyMap props = f.file()->properties();
+  bool changed = false;
+
+  try {
+    if (std::strcmp(field, "title") == 0) {
+      TagLib::String oldVal = tag->title();
+      TagLib::String newVal(value, TagLib::String::UTF8);
+      if (oldVal != newVal) {
+        f.tag()->setTitle(newVal);
+        changed = true;
+      }
+    } else if (std::strcmp(field, "artist") == 0) {
+      TagLib::String oldVal = tag->artist();
+      TagLib::String newVal(value, TagLib::String::UTF8);
+      if (oldVal != newVal) {
+        tag->setArtist(newVal);
+        changed = true;
+      }
     }
-    return true;
-    if (std::strcmp(value, "test")) {
-        return false;
+
+    f.save();
+    if (changed) {
+      if (!f.save()) {
+        return -1;
+      }
+      return 1;
     }
-    return true;
+    return 0;
+
+  } catch (const std::exception& e) {
+    return -1;
+  }
+
+  return -1;
 }
 
 void free_metadata(Metadata* data) {

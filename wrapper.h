@@ -34,7 +34,7 @@ Metadata* read_metadata(const char* filename);
 // Frees metadata
 void free_metadata(Metadata* data);
 
-bool edit_metadata(const char* filename, const char* field, const char* value);
+int edit_metadata(const char* filename, const char* field, const char* value);
 
 #ifdef __cplusplus
 }
