@@ -1,7 +1,7 @@
 # gotag
 [//]: [![Build][build-badge]][build]
 
-A simple music tag editor taggerui using [taglib](https://github.com/taglib/taglib) using [cgo](https://pkg.go.dev/cmd/cgo) with [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/bubbletea).
+A simple music tag editor using [taglib](https://github.com/taglib/taglib) using [cgo](https://pkg.go.dev/cmd/cgo) with [bubbletea](https://github.com/charmbracelet/bubbletea) and [lipgloss](https://github.com/charmbracelet/bubbletea).
 
 ## Features
 
