@@ -1,4 +1,5 @@
 #include "wrapper.h"
+#include <taglib/taglib.h>
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <taglib/tpropertymap.h>
@@ -196,6 +197,19 @@ Metadata* read_metadata(const char* filename) {
   meta->has_image = hasEmbeddedImage(f.file()) ? 1 : 0;
 
   return meta;
+}
+
+bool edit_metadata(const char* filename, const char* field, const char* value) {
+    TagLib::FileRef f(filename);
+    return true;
+    if (f.isNull() || !f.tag()) {
+        return false;
+    }
+    return true;
+    if (std::strcmp(value, "test")) {
+        return false;
+    }
+    return true;
 }
 
 void free_metadata(Metadata* data) {
